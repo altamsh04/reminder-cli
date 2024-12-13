@@ -46,7 +46,7 @@ reminder list
 - `reminder --help`: Show help information
 - `reminder --version`: Show version
 
-## 🤝 Contributing
+## Contributing
 
 Contributions, issues, and feature requests are welcome! Feel free to check [issues page](https://github.com/altamsh04/reminder-cli/issues).
 
