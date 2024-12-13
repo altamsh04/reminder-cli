@@ -1,6 +1,6 @@
 {
   "name": "@altamsh04/reminder-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A simple node command-line tool that allows users to set reminders for tasks or events directly from the terminal.",
   "main": "index.js",
   "type": "module",
