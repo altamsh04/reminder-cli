@@ -58,9 +58,8 @@ Contributions, issues, and feature requests are welcome! Feel free to check [iss
 
 ## License
 
-Distributed under the ISC License. See `MIT LICENSE` for more information.
+Distributed under the MIT License.
 
-## Author
+## Maintainers
 
-**Altamsh Bairagdar**
-- GitHub: [@altamsh04](https://github.com/altamsh04)
+- [@altamsh04](https://github.com/altamsh04)
