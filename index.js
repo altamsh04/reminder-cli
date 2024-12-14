@@ -5,6 +5,7 @@ import { hideBin } from "yargs/helpers";
 import { reminder } from "./manageReminders.js";
 
 yargs(hideBin(process.argv))
+  .scriptName("reminder")
   .command(
     "init",
     "Initialize the reminder-cli tool and create storage file",
