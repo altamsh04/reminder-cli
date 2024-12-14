@@ -52,7 +52,7 @@ reminder cls
 - `reminder init`: Initialize the reminder tool
 - `reminder set <reminder>`: Add a new reminder
 - `reminder list or reminder ls`: Display all reminders
-- `reminder clear or reminder cl`: Clear all reminders
+- `reminder clear or reminder cls`: Clear all reminders
 - `reminder --help`: Show help information
 - `reminder --version`: Show version
 
