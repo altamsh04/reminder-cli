@@ -51,28 +51,34 @@ const initReminder = async () => {
 
 /**
  * Reads and parses reminders from the JSON file.
- * 
- * Handles various scenarios such as:
- * - Reading existing reminders
- * - Returning an empty array if file doesn't exist
- * - Handling parsing errors
- * 
+ *
+ * This function handles various scenarios gracefully, including:
+ * - Returning an empty array if the file does not exist.
+ * - Returning an empty array if the file is empty.
+ * - Handling and logging parsing errors for invalid JSON content.
+ *
  * @async
- * @function
- * @returns {Promise<Array>} An array of reminder objects
- * @throws {Error} If there's an unexpected error reading the file
+ * @function readRemindersFromFile
+ * @returns {Promise<Array>} A promise that resolves to an array of reminders.
+ * If the file is empty or does not exist, an empty array is returned.
+ * @throws {Error} If there is an unexpected error while reading the file.
  */
 const readRemindersFromFile = async () => {
   try {
     const data = await fs.readFile(filePath, "utf8");
+
+    if (data.trim() === "") {
+      return [];
+    }
+
     const parsedData = JSON.parse(data);
     return Array.isArray(parsedData) ? parsedData : [];
   } catch (error) {
     if (error.code === "ENOENT") {
       return [];
     }
-    
-    console.error(chalk.red("Error reading reminders:"), error);
+
+    console.error(chalk.red("Error reading reminders:"), error.message);
     return [];
   }
 };
@@ -156,6 +162,39 @@ const listReminders = async () => {
 };
 
 /**
+ * Clears all reminders from the storage file.
+ *
+ * This function performs the following steps:
+ * 1. Reads the existing reminders from the storage file.
+ * 2. If there are no reminders, it logs a message indicating that no reminders are set.
+ * 3. If reminders are found, it overwrites the file with an empty array, effectively clearing all reminders.
+ * 4. Logs a success message after clearing the reminders.
+ *
+ * Error Handling:
+ * - If any error occurs during reading or writing to the file, it logs the error message without terminating the process.
+ *
+ * @async
+ * @function clearReminders
+ * @returns {Promise<void>} A promise that resolves when the operation is complete.
+ * @throws {Error} If there is an unexpected error during file operations.
+ */
+const clearReminders = async () => {
+  try {
+    const reminders = await readRemindersFromFile();
+
+    if (reminders.length === 0) {
+      console.log(chalk.green("No reminders set yet."));
+    } else {
+      await fs.writeFile(filePath, JSON.stringify([], null, 2));
+      console.log(chalk.blue("All reminders have been cleared."));
+    }
+  } catch (error) {
+    console.error(chalk.red("An error occurred while clearing reminders:", error.message));
+  }
+};
+
+
+/**
  * Exports the reminder module with its core functions.
  * Provides a clean, modular interface for reminder operations.
  */
@@ -163,4 +202,5 @@ export const reminder = {
   initReminder,
   setReminder,
   listReminders,
+  clearReminders
 };
