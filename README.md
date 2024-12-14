@@ -36,13 +36,15 @@ reminder set "Meeting with team at 2 PM"
 
 ```bash
 reminder list
+or
+reminder ls
 ```
 
 ## Commands
 
 - `reminder init`: Initialize the reminder tool
 - `reminder set <reminder>`: Add a new reminder
-- `reminder list`: Display all reminders
+- `reminder list or reminder ls`: Display all reminders
 - `reminder --help`: Show help information
 - `reminder --version`: Show version
 
