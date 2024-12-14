@@ -46,7 +46,7 @@ yargs(hideBin(process.argv))
     }
   )
   .command(
-    "list",
+    ["list", "ls"],
     "Display all existing reminders",
     () => {},
     () => {
