@@ -53,6 +53,14 @@ yargs(hideBin(process.argv))
       reminder.listReminders();
     }
   )
+  .command(
+    ["clear", "cls"],
+    "Clear all existing reminders",
+    () => {},
+    () => {
+      reminder.clearReminders();
+    }
+  )
   .demandCommand(1, "You must provide a valid command. Use --help for assistance.")
   .recommendCommands()
   .help()
