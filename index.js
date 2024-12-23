@@ -23,8 +23,8 @@ yargs(hideBin(process.argv))
         • Use double quotes for multi-word reminders
         • Examples:
           - reminder set "Buy groceries for weekend"
-          - reminder set "Meeting with team at 2 PM"
-          - reminder set "Call mom on her birthday"
+          - reminder set "Meeting with team at 2 PM" --in 1h
+          - reminder set "Call mom on her birthday" -i 30m
         
         Pro Tips:
         ✓ Enclose entire reminder in double quotes
@@ -33,7 +33,13 @@ yargs(hideBin(process.argv))
         type: "string",
         demandOption: true,
       })
-      .example('reminder set "Buy milk and eggs"', 'Set a reminder with multiple words');
+      .option("in", {
+        alias: "i",
+        type: "string",
+        describe: "Schedule reminder (e.g., '1h', '30m', '10s')"
+      })
+      .example('reminder set "Buy milk" --in 1h', 'Remind in 1 hour')
+      .example('reminder set "Team meeting" -i 30m', 'Remind in 30 minutes');
     },
     (argv) => {
       const trimmedReminder = argv.reminder.trim();
@@ -43,7 +49,11 @@ yargs(hideBin(process.argv))
         return;
       }
 
-      reminder.setReminder(trimmedReminder);
+      try {
+        reminder.setReminder(trimmedReminder, argv.in);
+      } catch (error) {
+        console.error(chalk.red(error.message));
+      }
     }
   )
   .command(
