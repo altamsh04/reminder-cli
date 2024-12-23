@@ -25,11 +25,18 @@ npm install -g @altamsh04/reminder-cli
 reminder init
 ```
 
-### Set a Reminder
+### Set a Reminder without scheduling
 
 ```bash
 reminder set "Buy groceries for weekend"
-reminder set "Meeting with team at 2 PM"
+```
+
+### Set a Reminder with scheduling ( Use '1s', '1m', or '1h')
+
+```bash
+reminder set "Take medicine" -i 30m
+or
+reminder set "Meeting with team at 2 PM" --in 1h
 ```
 
 ### List Reminders
@@ -51,6 +58,7 @@ reminder cls
 
 - `reminder init`: Initialize the reminder tool
 - `reminder set <reminder>`: Add a new reminder
+- `reminder set <reminder> --in <time>`: Add a new reminder with optional scheduling
 - `reminder list or reminder ls`: Display all reminders
 - `reminder clear or reminder cls`: Clear all reminders
 - `reminder --help`: Show help information
