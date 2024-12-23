@@ -1,7 +1,9 @@
 import chalk from "chalk";
 import fs from "fs/promises";
+import schedule from "node-schedule";
 import ora from "ora";
 import path from "path";
+import ReminderSound from "./reminderSoundNotification.js";
 
 /**
  * Absolute file path for storing reminders in JSON format.
@@ -12,19 +14,21 @@ const filePath = path.resolve("storeReminders.json");
 
 /**
  * Initializes the Reminder CLI by creating the reminder.json file if it doesn't exist.
- * 
+ *
  * Provides a user-friendly initialization experience with:
  * - Animated spinner
  * - Welcome messages
  * - Automatic reminder.json file creation
- * 
+ *
  * @async
  * @function
  * @returns {Promise<void>}
  */
 const initReminder = async () => {
   const spinner = ora({
-    text: chalk.green("Initializing... reminder-cli tool! Wait a few seconds ;)"),
+    text: chalk.green(
+      "Initializing... reminder-cli tool! Wait a few seconds ;)"
+    ),
     spinner: "dots",
   }).start();
 
@@ -32,16 +36,24 @@ const initReminder = async () => {
     try {
       await fs.access(filePath);
     } catch (error) {
-      if (error.code === 'ENOENT') {
-        await fs.writeFile(filePath, JSON.stringify([], null, 2), 'utf8');
+      if (error.code === "ENOENT") {
+        await fs.writeFile(filePath, JSON.stringify([], null, 2), "utf8");
       }
     }
     setTimeout(() => {
       spinner.stop();
       console.log(chalk.bold.green("Welcome to reminder-cli tool 🤗."));
-      console.log(chalk.cyan("Your personal task management system is now operational."));
-      console.log(chalk.white("Centralize your tasks, enhance your productivity."));
-      console.log(chalk.yellow("\nQuick Start: Type 'reminder --help' to view available commands."));
+      console.log(
+        chalk.cyan("Your personal task management system is now operational.")
+      );
+      console.log(
+        chalk.white("Centralize your tasks, enhance your productivity.")
+      );
+      console.log(
+        chalk.yellow(
+          "\nQuick Start: Type 'reminder --help' to view available commands."
+        )
+      );
     }, 2000);
   } catch (error) {
     spinner.stop();
@@ -85,11 +97,11 @@ const readRemindersFromFile = async () => {
 
 /**
  * Writes the reminders array to the JSON file.
- * 
+ *
  * Serializes the reminders array with proper indentation for readability.
- * 
+ *
  * @async
- * @function
+ * @function writeRemindersToFile
  * @param {Array} reminders - The array of reminder objects to write
  * @returns {Promise<void>}
  * @throws {Error} If there's an issue writing to the file
@@ -100,33 +112,76 @@ const writeRemindersToFile = async (reminders) => {
 };
 
 /**
+ * Parses time input to calculate future scheduling
+ * @function parseTimeInput
+ * @param {string} timeStr - Time string like '1h', '30m', '10s'
+ * @returns {Date} Scheduled date/time
+ */
+const parseTimeInput = (timeStr) => {
+  const amount = parseInt(timeStr.slice(0, -1));
+  const unit = timeStr.slice(-1).toLowerCase();
+
+  const now = new Date();
+  switch (unit) {
+    case "s":
+      return new Date(now.getTime() + amount * 1000);
+    case "m":
+      return new Date(now.getTime() + amount * 60 * 1000);
+    case "h":
+      return new Date(now.getTime() + amount * 60 * 60 * 1000);
+    default:
+      throw new Error("Invalid time format. Use '1s', '1m', or '1h'.");
+  }
+};
+
+/**
  * Creates and saves a new reminder to the reminders list.
- * 
+ *
  * Handles:
  * - Reading existing reminders
  * - Generating a unique ID for the new reminder
  * - Saving the updated reminders list
  * - Providing user feedback
- * 
+ * - Play reminder notification sound
+ *
  * @async
- * @function
+ * @function setReminder
  * @param {string} reminderText - The text of the reminder to set
+ * @param {string} [timeStr] - Optional scheduling time
  * @returns {Promise<void>}
  */
-const setReminder = async (reminderText) => {
+const setReminder = async (reminderText, timeStr = null) => {
   try {
     const reminders = await readRemindersFromFile();
-    if (!Array.isArray(reminders)) {
-      throw new Error("Reminders data is not in correct format.");
-    }
+
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, "0");
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const yyyy = today.getFullYear();
+
     const newReminder = {
       id: reminders.length + 1,
-      text: reminderText
+      text: reminderText,
+      createdAt: `${dd}/${mm}/${yyyy}`,
+      scheduledAt: timeStr ? parseTimeInput(timeStr) : null,
     };
+
+    if (timeStr) {
+      schedule.scheduleJob(newReminder.scheduledAt, () => {
+        ReminderSound.playSound();
+        console.log(chalk.green(`🔔 Reminder: ${reminderText}`));
+      });
+    }
+
     reminders.push(newReminder);
     await writeRemindersToFile(reminders);
 
     console.log(chalk.green(`Reminder Set: "${reminderText}"`));
+    if (timeStr) {
+      console.log(
+        chalk.cyan(`Scheduled for: ${newReminder.scheduledAt.toLocaleString()}`)
+      );
+    }
     console.log(chalk.cyan(`You now have ${reminders.length} reminder(s).`));
   } catch (error) {
     console.error(chalk.red("Error saving the reminder:"), error);
@@ -135,14 +190,14 @@ const setReminder = async (reminderText) => {
 
 /**
  * Retrieves and displays all existing reminders.
- * 
+ *
  * Handles scenarios:
  * - Displaying all reminders
  * - Showing a message when no reminders exist
  * - Handling potential errors during retrieval
- * 
+ *
  * @async
- * @function
+ * @function listReminders
  * @returns {Promise<void>}
  */
 const listReminders = async () => {
@@ -152,9 +207,10 @@ const listReminders = async () => {
       console.log(chalk.yellow("No reminders set yet."));
     } else {
       console.log(chalk.green("Your Reminders:"));
-      reminders.forEach((reminder) => {
-        console.log(chalk.cyan(`ID: ${reminder.id}, Message: ${reminder.text}`));
-      });
+      // reminders.forEach((reminder) => {
+      //   console.log(chalk.cyan(`ID: ${reminder.id}, Message: ${reminder.text}, Date: ${reminder.date}`));
+      // });
+      console.table(reminders);
     }
   } catch (error) {
     console.error(chalk.red("Error reading reminders:"), error);
@@ -189,10 +245,11 @@ const clearReminders = async () => {
       console.log(chalk.blue("All reminders have been cleared."));
     }
   } catch (error) {
-    console.error(chalk.red("An error occurred while clearing reminders:", error.message));
+    console.error(
+      chalk.red("An error occurred while clearing reminders:", error.message)
+    );
   }
 };
-
 
 /**
  * Exports the reminder module with its core functions.
@@ -202,5 +259,5 @@ export const reminder = {
   initReminder,
   setReminder,
   listReminders,
-  clearReminders
+  clearReminders,
 };
